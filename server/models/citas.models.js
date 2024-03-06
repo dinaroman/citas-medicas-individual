@@ -4,13 +4,13 @@ const mongoose = require("mongoose")
 const citaSchema = new mongoose.Schema({
     nombre_y_apellido: {
         type: String,
-        minLength: [2, "El nombre completo debe contener más de dos letras"],
-        maxLength: [150, "El nombre que ingresó es demasiado largo"]
+        minlength: [2, "El nombre completo debe contener más de dos letras"],
+        maxlength: [150, "El nombre que ingresó es demasiado largo"]
     },
     CIN:{
         type: Number,
-        minLength: [4, "El número de cédula debe contener al menos 4 dígitos"],
-        maxLength: [20,"El número de cédula no puede contener más de 20 dígitos"]
+        minlength: [4, "El número de cédula debe contener al menos 4 dígitos"],
+        maxlength: [20,"El número de cédula no puede contener más de 20 dígitos"]
     },
     edad:{
         type: Number,
@@ -18,12 +18,26 @@ const citaSchema = new mongoose.Schema({
     },
     telefono:{
         type: Number,
-        minLength: [5, "El número de teléfono debe contener mínimamente 5 dígitos"],
-        maxLength : [30, "El número de teléfono no puede contener más de 30 dígitos"]
+        minelngth: [5, "El número de teléfono debe contener mínimamente 5 dígitos"],
+        maxlength : [30, "El número de teléfono no puede contener más de 30 dígitos"]
     },
     especialidades_consultadas:{
         type: String,
         enum : ["Médico Clínico", "Cardiólogo", "Endocrinólogo"],
+    },
+    fecha_consulta: {
+        type: Date,
+        required: true 
+    },
+    hora_consulta: {
+        type: String,
+        required: true,
+        validate: {
+            validator: function(value) {
+                return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
+            },
+            message: props => `${props.value} no es una hora válida. El formato debe ser HH:mm.`
+        }
     }
 },{timestamps: true, versionKey:false})
 

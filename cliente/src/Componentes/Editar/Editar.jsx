@@ -1,104 +1,121 @@
 
-    import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const EditarEliminarCita = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const { register, handleSubmit } = useForm();
-    const [cita, setCita] = useState({});
+const VisualizarCitas = () => {
+    const [citas, setCitas] = useState([]);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchCitas = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:8001/api/detallscita/${id}`);
-                setCita(response.data);
+                const response = await axios.get('http://127.0.0.1:3000/api/citas/all');
+                setCitas(response.data);
             } catch (error) {
-                console.error('Error al obtener datos de la cita:', error);
+                console.error('Error al obtener citas:', error);
             }
         };
+        fetchCitas();
+    }, []);
 
-        fetchData();
-    }, [id]);
-
-    const onSubmit = async (data) => {
+    const handleDelete = async (id) => {
         try {
-            const response = await axios.put(`http://127.0.0.1:8001/api/editcita/${id}`, data);
-            console.log('Cita editada con éxito ', response);
-            navigate('/'); // Navega de vuelta a la página principal después de editar la cita
-        } catch (error) {
-            console.error('Error al editar cita:', error);
-        }
-    };
-
-    const eliminarCita = async () => {
-        try {
-            const response = await axios.delete(`http://127.0.0.1:8001/api/eliminar/${id}`);
-            console.log('Cita eliminada con éxito', response);
-            navigate('/');
+            await axios.delete(`http://127.0.0.1:3000/api/citas/${id}`);
+            setCitas(citas.filter(cita => cita._id !== id));
         } catch (error) {
             console.error('Error al eliminar cita:', error);
         }
     };
+    
+    const handleEdit = async (id) => {
+        
+        window.location.href = `/editar/${id}`;
+    };
 
+
+    const containerStyle = {
+        backgroundColor: '#daeaf6',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '20px'
+    };
+
+    const listItemStyle = {
+        backgroundColor: '#fff',
+        padding: '20px',
+        marginBottom: '20px',
+        borderRadius: '8px',
+        boxShadow: '0px 0px 10px 0px rgba(0,0,0,0.1)'
+    };
+
+    const buttonStyle = {
+        backgroundColor: '#b5d6d6',
+        color: '#000',
+        border: 'none',
+        padding: '0.75rem 1rem',
+        borderRadius: '0.25rem',
+        cursor: 'pointer'
+    };
 
     return (
-        <div className='cofre1'>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 className='cofretitulo1'>hola</h1>
-                <button className='cofreboton'>
-                    <Link to={'/'} style={{ }}>
-                        Back to Home
+        <div style={containerStyle}>
+            <h1>Lista de Citas</h1>
+            <br />
+            <ul>
+                {citas.map((cita) => (
+                    <li key={cita._id} style={listItemStyle}>
+                        <div>
+                            <strong>Nombre y Apellido:</strong> {cita.nombre_y_apellido}
+                        </div>
+                        <br />
+                        <div>
+                            <strong>CIN:</strong> {cita.CIN}
+                        </div>
+                        <br />
+                        <div>
+                            <strong>Edad:</strong> {cita.edad}
+                        </div>
+                        <br />
+                        <div>
+                            <strong>Teléfono:</strong> {cita.telefono}
+                        </div>
+                        <br />
+                        <div>
+                            <strong>Especialidades Consultadas:</strong> {cita.especialidades_consultadas}
+                        </div>
+                        <br />
+                        <div>
+                            <strong>Fecha de consulta:</strong> {cita.fecha_consulta}
+                        </div>
+                        <br />
+                        <div>
+                            <strong>Hora de consulta:</strong> {cita.hora_consulta}
+                        </div>
+                        <br />
+                        <div>
+                            <button style={{ ...buttonStyle, marginRight: '10px' }} onClick={() => handleDelete(cita._id)}>Eliminar</button>
+                            <Link to={`/editar/${cita._id}`}>
+                                <button style={buttonStyle}>Editar</button>
+                            </Link>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+            <div>
+                <button style={buttonStyle}>
+                    <Link to={'/home'} style={{ color: '#000', textDecoration: 'none' }}>
+                        Volver a Inicio
                     </Link>
-                </button>
-            </div>
-
-            <h2 className='cofretitulo2'>Edit: </h2>
-
-            <form className='cofre2' onSubmit={handleSubmit(onSubmit)}>
-                <div className='cofre2uno'>
-                    <h2 className='cofresubtitulo1'>Editar detalles de la cita</h2>
-                    <div>
-                        <label className='cofrepequeño1'>Nombre y Apellido:</label>
-                        <br />
-                        <input className='cofrecito1' type='text' {...register('nombre_y_apellido', { required: true, minLength: 2, maxLength: 150 })} defaultValue={cita.nombre_y_apellido} />
-                    </div>
-                    <div>
-                        <label className='cofrepequeño2'>CIN:</label>
-                        <br />
-                        <input className='cofrecito2' type='number' {...register('CIN', { required: true, minLength: 4, maxLength: 20 })} defaultValue={cita.CIN} />
-                    </div>
-                    <div>
-                        <label className='cofrepequeño3'>Edad:</label>
-                        <br />
-                        <input className='cofrecito3' type='number' {...register('edad', { required: true, max: 110 })} defaultValue={cita.edad} />
-                    </div>
-                    <div>
-                        <label className='cofrepequeño4'>Teléfono:</label>
-                        <br />
-                        <input className='cofrecito4' type='tel' {...register('telefono', { required: true, minLength: 5, maxLength: 30 })} defaultValue={cita.telefono} />
-                    </div>
-                    <div>
-                        <label className='cofrepequeño5'>Especialidades Consultadas:</label>
-                        <select className='cofrecito5' {...register('especialidades_consultadas', { required: true })} defaultValue={cita.especialidades_consultadas}>
-                            <option value='Médico Clínico'>Médico Clínico</option>
-                            <option value='Cardiólogo'>Cardiólogo</option>
-                            <option value='Endocrinólogo'>Endocrinólogo</option>
-                        </select>
-                    </div>
-                </div>
-                <input className='botoncofre' type='submit' value='Editar Cita' />
-            </form>
-
-            <div style={{ marginTop: '20px' }}>
-                <button className='cofreboton' onClick={eliminarCita}>
-                    Eliminar Cita
                 </button>
             </div>
         </div>
     );
 };
 
-export default EditarEliminarCita ;
+export default VisualizarCitas;
+
+
+    
